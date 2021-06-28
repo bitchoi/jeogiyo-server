@@ -37,7 +37,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
         this.email = user.getEmail();
         this.userId = user.getUserId();
         this.isEnabled = true;
-        this.isAccountNonLocked = false;
+        this.isAccountNonLocked = true;
         this.isCredentialsNonExpired = true;
         this.isAccountNonExpired = true;
     }
