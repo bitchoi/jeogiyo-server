@@ -1,7 +1,5 @@
 package com.bitchoi.jeogiyoserver.security;
 
-import com.bitchoi.jeogiyoserver.utils.JwtUtils;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,17 +18,14 @@ import java.io.IOException;
 @Log4j2
 public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private final JwtUtils jwtUtils;
-
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
-    public AuthenticationFilter(final RequestMatcher requiresAuth, JwtUtils jwtUtils) {
+    public AuthenticationFilter(final RequestMatcher requiresAuth) {
         super(requiresAuth);
-        this.jwtUtils = jwtUtils;
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
         final String headerToken = request.getHeader(AUTHORIZATION_HEADER);
         String username = null;
@@ -38,14 +33,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
         if(headerToken != null && headerToken.startsWith("Bearer ")){
             jwtToken = headerToken.substring(7);
-            try {
-                username = jwtUtils.getUserEmailFromToken(jwtToken);
-            }catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");
-            } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");
-            }
-            Authentication auth = new UsernamePasswordAuthenticationToken(username,null);
+            Authentication auth = new UsernamePasswordAuthenticationToken(jwtToken, jwtToken);
             return getAuthenticationManager().authenticate(auth);
         }
 

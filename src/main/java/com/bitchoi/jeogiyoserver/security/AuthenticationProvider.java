@@ -10,7 +10,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @Log4j2
@@ -40,9 +39,8 @@ public class AuthenticationProvider extends AbstractUserDetailsAuthenticationPro
         }
 
         String userEmail = jwtUtils.getUserEmailFromToken(jwtToken);
-        if(StringUtils.isEmpty(userEmail)){
+        if(userEmail.isEmpty()){
             throw new UsernameNotFoundException("not find email");
-
         }
         var userDetails = userService.getUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("user not find"));
         return userDetails;
