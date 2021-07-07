@@ -46,8 +46,26 @@ public class AuthenticationService {
 
     @Transactional
     public JwtResponse authenticationForToken(JwtRequest jwtRequest) {
-        String email = jwtRequest.getEmail();
-        var user = findByEmailAndPassword(email, jwtRequest.getPassword()).orElseThrow(() -> new IllegalArgumentException("not find user"));
+        User user;
+        switch (jwtRequest.getGrantType()){
+            case CLIENT_CREDENTIALS:
+                String email = jwtRequest.getEmail();
+                user = findByEmailAndPassword(email, jwtRequest.getPassword()).orElseThrow(() -> new IllegalArgumentException("not find user"));
+                break;
+            case REFRESH_TOKEN:
+                var refreshToken = refreshTokenRepository.findByRefreshToken(jwtRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("not find refresh token"));
+                if(refreshToken.getExpiredOn().before(new Date())){
+                    throw new IllegalStateException("expired refresh token");
+                }
+                user = refreshToken.getUser();
+                if(user == null){
+                    throw new IllegalStateException("not find user");
+                }
+                break;
+            default:
+                throw new IllegalStateException("Grant type cannot be null");
+        }
+
         return processJwtResponse(user);
     }
 
@@ -61,10 +79,10 @@ public class AuthenticationService {
             if(refreshToken.isPresent()){
                 refreshTokenRepository.deleteById(user.getUserId());
             }
+            res.setRefreshToken(UUID.randomUUID().toString().replace("-", "").toLowerCase());
             Date expiredDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_DURATION * 1000);
-            var refTokenBuilder = RefreshToken.builder().refreshToken(UUID.randomUUID().toString().replace("-", "")
-                    .toLowerCase()).user(user).expiredOn(expiredDate).build();
-            refreshTokenRepository.save(refTokenBuilder);
+            var refreshTokenEnt = new RefreshToken(res.getRefreshToken(), user, expiredDate);
+            refreshTokenRepository.save(refreshTokenEnt);
         }
         return res;
     }
