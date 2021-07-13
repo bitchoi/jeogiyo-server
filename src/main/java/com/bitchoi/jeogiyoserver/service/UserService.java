@@ -1,5 +1,6 @@
 package com.bitchoi.jeogiyoserver.service;
 
+import com.bitchoi.jeogiyoserver.dto.PhoneDto;
 import com.bitchoi.jeogiyoserver.dto.SignUpDto;
 import com.bitchoi.jeogiyoserver.model.Role;
 import com.bitchoi.jeogiyoserver.model.User;
@@ -39,5 +40,18 @@ public class UserService {
         user.setPhone(signUpDto.getPhone());
         user.setRole(Role.USER.getValue());
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public Boolean emailExistCheck(String email) {
+        return userRepository.emailExistCheck(email);
+    }
+
+    @Transactional(readOnly = true)
+    public PhoneDto phoneAuthCheck(String phone) {
+        //TODO phone auth
+        PhoneDto res = new PhoneDto();
+        res.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 7) + "-" + phone.substring(7, 11));
+        return res;
     }
 }
