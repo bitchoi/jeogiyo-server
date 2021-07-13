@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 public class AuthenticationController {
@@ -15,7 +18,13 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/auth")
-    public JwtResponse auth(@RequestBody JwtRequest jwtRequest){
-        return authenticationService.authenticationForToken(jwtRequest);
+    public JwtResponse auth(HttpServletResponse response, @RequestBody JwtRequest jwtRequest){
+        var res = authenticationService.authenticationForToken(jwtRequest);
+        Cookie cookie = new Cookie("refreshToken", res.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(60 * 60 * 24 * 30);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return res;
     }
 }
