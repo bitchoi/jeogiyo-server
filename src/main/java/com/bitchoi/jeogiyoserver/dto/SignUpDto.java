@@ -18,4 +18,6 @@ public class SignUpDto {
     private String role;
 
     private String phone;
+
+    private Integer code;
 }

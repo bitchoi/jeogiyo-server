@@ -32,5 +32,4 @@ public class RegistrationController {
     public PhoneDto phoneAuthCheck(@RequestParam String phone){
         return userService.phoneAuthCheck(phone);
     }
-
 }

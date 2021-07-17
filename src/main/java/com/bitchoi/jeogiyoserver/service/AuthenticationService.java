@@ -23,11 +23,11 @@ import java.util.UUID;
 @Log4j2
 public class AuthenticationService {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepo;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepo;
 
     private final JwtUtils jwtUtils;
 
@@ -35,7 +35,7 @@ public class AuthenticationService {
     private long REFRESH_TOKEN_DURATION;
 
     public Optional<User> findByEmailAndPassword(String email, String password) {
-        Optional<User> optUser = userRepository.findByEmail(email);
+        Optional<User> optUser = userRepo.findByEmail(email);
         if (optUser.isPresent()) {
             User user = optUser.get();
             return passwordEncoder.matches(password, user.getPassword()) ? optUser : Optional.empty();
@@ -53,7 +53,7 @@ public class AuthenticationService {
                 user = findByEmailAndPassword(email, jwtRequest.getPassword()).orElseThrow(() -> new IllegalArgumentException("not find user"));
                 break;
             case REFRESH_TOKEN:
-                var refreshToken = refreshTokenRepository.findByRefreshToken(jwtRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("not find refresh token"));
+                var refreshToken = refreshTokenRepo.findByRefreshToken(jwtRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("not find refresh token"));
                 if(refreshToken.getExpiredOn().before(new Date())){
                     throw new IllegalStateException("expired refresh token");
                 }
@@ -72,17 +72,17 @@ public class AuthenticationService {
     private JwtResponse processJwtResponse(User user) {
         final String email = user.getEmail();
         var res = jwtUtils.generateToken(email);
-        var refreshToken = refreshTokenRepository.findById(user.getUserId());
+        var refreshToken = refreshTokenRepo.findById(user.getUserId());
         if(refreshToken.isPresent() && refreshToken.get().getExpiredOn().after(new Date())){
             res.setRefreshToken(refreshToken.get().getRefreshToken());
         }else {
             if(refreshToken.isPresent()){
-                refreshTokenRepository.deleteById(user.getUserId());
+                refreshTokenRepo.deleteById(user.getUserId());
             }
             res.setRefreshToken(UUID.randomUUID().toString().replace("-", "").toLowerCase());
             Date expiredDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_DURATION * 1000);
             var refreshTokenEnt = new RefreshToken(res.getRefreshToken(), user, expiredDate);
-            refreshTokenRepository.save(refreshTokenEnt);
+            refreshTokenRepo.save(refreshTokenEnt);
         }
         return res;
     }
