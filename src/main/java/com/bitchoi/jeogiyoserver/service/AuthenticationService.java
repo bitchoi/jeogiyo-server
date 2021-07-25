@@ -2,6 +2,7 @@ package com.bitchoi.jeogiyoserver.service;
 
 import com.bitchoi.jeogiyoserver.dto.JwtRequest;
 import com.bitchoi.jeogiyoserver.dto.JwtResponse;
+import com.bitchoi.jeogiyoserver.dto.UserDto;
 import com.bitchoi.jeogiyoserver.model.RefreshToken;
 import com.bitchoi.jeogiyoserver.model.User;
 import com.bitchoi.jeogiyoserver.repository.RefreshTokenRepository;
@@ -85,5 +86,12 @@ public class AuthenticationService {
             refreshTokenRepo.save(refreshTokenEnt);
         }
         return res;
+    }
+
+    public UserDto findEmail(String name, String phone){
+        var user = userRepo.findByNameAndPhone(name, phone).orElseThrow(() -> new IllegalArgumentException("not find email"));
+        UserDto userDto = new UserDto();
+        userDto.setEmail(user.getEmail());
+        return userDto;
     }
 }

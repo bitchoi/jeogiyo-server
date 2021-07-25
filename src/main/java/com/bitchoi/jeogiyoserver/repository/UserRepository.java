@@ -14,4 +14,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
             ":email")
     boolean emailExistCheck(String email);
 
+    @Query("SELECT u FROM User u WHERE u.name = :name and u.phone = :phone")
+    Optional<User> findByNameAndPhone(String name, String phone);
 }

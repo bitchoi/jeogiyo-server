@@ -2,11 +2,10 @@ package com.bitchoi.jeogiyoserver.controller;
 
 import com.bitchoi.jeogiyoserver.dto.JwtRequest;
 import com.bitchoi.jeogiyoserver.dto.JwtResponse;
+import com.bitchoi.jeogiyoserver.dto.UserDto;
 import com.bitchoi.jeogiyoserver.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -26,5 +25,10 @@ public class AuthenticationController {
         cookie.setPath("/");
         response.addCookie(cookie);
         return res;
+    }
+
+    @GetMapping("/email-find")
+    public UserDto findEmail(@RequestParam String name, @RequestParam String phone){
+        return authenticationService.findEmail(name, phone);
     }
 }

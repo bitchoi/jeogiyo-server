@@ -55,6 +55,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(signUpDto.getEmail());
+        user.setName(signUpDto.getName());
         user.setNickname(signUpDto.getNickname());
         user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
         user.setPhone(signUpDto.getPhone());
